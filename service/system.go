@@ -47,6 +47,7 @@ type SystemService interface {
 	GetNetInfo() []net.IOCountersStat
 	GetCpuCoreNum() int
 	GetCpuPercent() float64
+	GetCpuPercents() []float64
 	GetMemInfo() map[string]interface{}
 	GetCpuInfo() []cpu.InfoStat
 	GetDirPath(path string) ([]model.Path, error)
@@ -347,6 +348,15 @@ func (c *systemService) GetCpuPercent() float64 {
 	return value
 }
 
+func (c *systemService) GetCpuPercents() []float64 {
+	percent, _ := cpu.Percent(1, true)
+	vals := []float64{}
+	for p, _ := range percent {
+		v, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", p), 64)
+		vals = append(vals, v)
+	}
+	return vals
+}
 func (c *systemService) GetCpuCoreNum() int {
 	count, _ := cpu.Counts(false)
 	return count

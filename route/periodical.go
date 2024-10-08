@@ -37,24 +37,29 @@ func SendAllHardwareStatusBySocket() {
 			}
 		}
 	}
-	cpu := service.MyService.System().GetCpuPercent()
+	cpuPercents := service.MyService.System().GetCpuPercents()
+	cpuPercent := service.MyService.System().GetCpuPercent()
 
 	var cpuModel = "arm"
-	if cpu := service.MyService.System().GetCpuInfo(); len(cpu) > 0 {
-		if strings.Count(strings.ToLower(strings.TrimSpace(cpu[0].ModelName)), "intel") > 0 {
+	var cpuModelName = ""
+	if cpus := service.MyService.System().GetCpuInfo(); len(cpus) > 0 {
+		if strings.Count(strings.ToLower(strings.TrimSpace(cpus[0].ModelName)), "intel") > 0 {
 			cpuModel = "intel"
-		} else if strings.Count(strings.ToLower(strings.TrimSpace(cpu[0].ModelName)), "amd") > 0 {
+		} else if strings.Count(strings.ToLower(strings.TrimSpace(cpus[0].ModelName)), "amd") > 0 {
 			cpuModel = "amd"
 		}
+		cpuModelName = strings.TrimSpace(cpus[0].ModelName)
 	}
 
 	num := service.MyService.System().GetCpuCoreNum()
 	cpuData := make(map[string]interface{})
-	cpuData["percent"] = cpu
+	cpuData["percents"] = cpuPercents
+	cpuData["percent"] = cpuPercent
 	cpuData["num"] = num
 	cpuData["temperature"] = service.MyService.System().GetCPUTemperature()
 	cpuData["power"] = service.MyService.System().GetCPUPower()
 	cpuData["model"] = cpuModel
+	cpuData["modelName"] = cpuModelName
 
 	memInfo := service.MyService.System().GetMemInfo()
 
@@ -70,6 +75,8 @@ func SendAllHardwareStatusBySocket() {
 		body[key.(string)] = value
 		return true
 	})
+
+	body["hardware"] = service.MyService.System().GetDeviceInfo()
 	service.MyService.Notify().SendNotify("casaos:system:utilization", body)
 }
 

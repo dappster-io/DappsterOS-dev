@@ -90,14 +90,14 @@ func GetSystemConfigDebug(ctx echo.Context) error {
 	version := service.MyService.Casa().GetCasaosVersion()
 	var bugContent string = fmt.Sprintf(`
 	 - OS: %s
-	 - CasaOS Version: %s
+	 - Dappster Version: %s
 	 - Disk Total: %v 
 	 - Disk Used: %v 
-	 - System Info: %s
 	 - Remote Version: %s
 	 - Browser: $Browser$ 
 	 - Version: $Version$
-`, sys.OS, common.VERSION, disk.Total>>20, disk.Used>>20, array, version.Version)
+`, sys.OS, common.VERSION, disk.Total>>20, disk.Used>>20 /*  array, */, version.Version)
+	// - System Info: %s
 
 	//	array = append(array, fmt.Sprintf("disk,total:%v,used:%v,UsedPercent:%v", disk.Total>>20, disk.Used>>20, disk.UsedPercent))
 
@@ -204,12 +204,14 @@ func GetSystemUtilization(ctx echo.Context) error {
 	cpu := service.MyService.System().GetCpuPercent()
 	num := service.MyService.System().GetCpuCoreNum()
 	cpuModel := "arm"
+	cpuModelName := ""
 	if cpu := service.MyService.System().GetCpuInfo(); len(cpu) > 0 {
 		if strings.Count(strings.ToLower(strings.TrimSpace(cpu[0].ModelName)), "intel") > 0 {
 			cpuModel = "intel"
 		} else if strings.Count(strings.ToLower(strings.TrimSpace(cpu[0].ModelName)), "amd") > 0 {
 			cpuModel = "amd"
 		}
+		cpuModelName = strings.TrimSpace(cpu[0].ModelName)
 	}
 	cpuData := make(map[string]interface{})
 	cpuData["percent"] = cpu
@@ -217,9 +219,11 @@ func GetSystemUtilization(ctx echo.Context) error {
 	cpuData["temperature"] = service.MyService.System().GetCPUTemperature()
 	cpuData["power"] = service.MyService.System().GetCPUPower()
 	cpuData["model"] = cpuModel
+	cpuData["modelName"] = cpuModelName
 
 	data["cpu"] = cpuData
 	data["mem"] = service.MyService.System().GetMemInfo()
+	data["hardware"] = service.MyService.System().GetDeviceInfo()
 
 	// 拼装网络信息
 	netList := service.MyService.System().GetNetInfo()
@@ -238,6 +242,7 @@ func GetSystemUtilization(ctx echo.Context) error {
 	}
 
 	data["net"] = newNet
+	data["netList"] = netList
 	systemMap := service.MyService.Notify().GetSystemTempMap()
 	systemMap.Range(func(key, value interface{}) bool {
 		data[key.(string)] = value
