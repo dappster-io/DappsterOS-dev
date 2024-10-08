@@ -84,7 +84,7 @@ func GetCasaOSErrorLogs(ctx echo.Context) error {
 
 // 系统配置
 func GetSystemConfigDebug(ctx echo.Context) error {
-	array := service.MyService.System().GetSystemConfigDebug()
+	// array := service.MyService.System().GetSystemConfigDebug()
 	disk := service.MyService.System().GetDiskInfo()
 	sys := service.MyService.System().GetSysInfo()
 	version := service.MyService.Casa().GetCasaosVersion()
